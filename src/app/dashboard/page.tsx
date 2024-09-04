@@ -1,37 +1,38 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
 import Dashboard from "@/components/Dashboard";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+
+const SearchParamsWrapper = dynamic(() => import("@/app/SearchParamsWrapper"), {
+  ssr: false,
+});
 
 const Page = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAuthAndRole = () => {
-      const token = localStorage.getItem("token");
-      const roleParam = searchParams.get("role");
-
-      if (!token || !roleParam) {
-        router.push("/login");
-      } else {
-        setRole(roleParam);
-      }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+    } else {
       setIsLoading(false);
-    };
-
-    checkAuthAndRole();
-  }, [searchParams, router]);
+    }
+  }, [router]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  return role ? <Dashboard role={role} /> : null;
+  return (
+    <Suspense fallback={<div>Loading search params...</div>}>
+      <SearchParamsWrapper setRole={setRole} />
+      {role ? <Dashboard role={role} /> : null}
+    </Suspense>
+  );
 };
 
 export default Page;
