@@ -34,7 +34,7 @@ export const registerUser = async (userData: {
   isAdmin: boolean;
 }) => {
   try {
-    const role = userData.isAdmin ? "admin" : "team-member";
+    const role = userData.isAdmin ? "admin" : "team member";
     const response = await api.post("/auth/register", {
       email: userData.email,
       password: userData.password,
